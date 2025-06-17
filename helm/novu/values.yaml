@@ -1,0 +1,217 @@
+# Default values for novu
+global:
+  imageRegistry: ghcr.io/novuhq/novu
+  imagePullPolicy: IfNotPresent
+  storageClass: ""
+
+# Environment configuration
+env:
+  nodeEnv: production
+  
+  # API Configuration
+  apiRootUrl: http://novu-api:3000
+  apiPort: 3000
+  frontBaseUrl: http://localhost:4000
+  
+  # WebSocket Configuration
+  wsPort: 3002
+  wsContextPath: ""
+  
+  # MongoDB Configuration
+  mongoUrl: mongodb://novu-mongodb:27017/novu
+  mongoMinPoolSize: 10
+  mongoMaxPoolSize: 10
+  mongoAutoCreateIndexes: true
+  mongoInitdbRootUsername: root
+  mongoInitdbRootPassword: password
+  
+  # Redis Configuration
+  redisHost: novu-redis
+  redisPort: 6379
+  redisPassword: ""
+  redisDbIndex: 2
+  redisCacheServiceHost: novu-redis
+  redisCacheServicePort: 6379
+  
+  # JWT Configuration
+  jwtSecret: "your-jwt-secret-key"
+  
+  # Storage Configuration
+  s3LocalStack: ""
+  s3BucketName: ""
+  s3Region: ""
+  awsAccessKeyId: ""
+  awsSecretAccessKey: ""
+  
+  # Encryption
+  storeEncryptionKey: "your-encryption-key"
+  novuSecretKey: "your-novu-secret-key"
+  
+  # JWT Expiration
+  subscriberWidgetJwtExpirationTime: "7d"
+  
+  # Monitoring
+  sentryDsn: ""
+  newRelicEnabled: false
+  newRelicAppName: ""
+  newRelicLicenseKey: ""
+  
+  # API Features
+  apiContextPath: ""
+  isApiIdempotencyEnabled: false
+  isApiRateLimitingEnabled: true
+  isNewMessagesApiResponseEnabled: false
+  isV2Enabled: false
+  
+  # Worker Configuration
+  broadcastQueueChunkSize: 100
+  multicastQueueChunkSize: 500
+  isEmailInlineCssDisabled: false
+  isUseMergedDigestIdEnabled: false
+  
+  # Dashboard Configuration
+  viteApiHostname: http://localhost:3000
+  viteWebsocketHostname: http://localhost:3002
+
+# Redis configuration
+redis:
+  enabled: true
+  image:
+    repository: redis
+    tag: alpine
+  persistence:
+    enabled: false
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "250m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+
+# MongoDB configuration
+mongodb:
+  enabled: true
+  image:
+    repository: mongo
+    tag: "8.0.3"
+  persistence:
+    enabled: true
+    size: 8Gi
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "500m"
+    limits:
+      memory: "1Gi"
+      cpu: "1000m"
+
+# API service configuration
+api:
+  enabled: true
+  image:
+    repository: ghcr.io/novuhq/novu/api
+    tag: "2.2.0"
+  replicaCount: 1
+  service:
+    type: ClusterIP
+    port: 3000
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "500m"
+    limits:
+      memory: "1Gi"
+      cpu: "1000m"
+
+# Worker service configuration
+worker:
+  enabled: true
+  image:
+    repository: ghcr.io/novuhq/novu/worker
+    tag: "2.2.0"
+  replicaCount: 1
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "500m"
+    limits:
+      memory: "1Gi"
+      cpu: "1000m"
+
+# WebSocket service configuration
+ws:
+  enabled: true
+  image:
+    repository: ghcr.io/novuhq/novu/ws
+    tag: "2.2.0"
+  replicaCount: 1
+  service:
+    type: ClusterIP
+    port: 3002
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "250m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+
+# Dashboard service configuration
+dashboard:
+  enabled: true
+  image:
+    repository: ghcr.io/novuhq/novu/dashboard
+    tag: "2.2.0"
+  replicaCount: 1
+  service:
+    type: NodePort
+    port: 4000
+    nodePort: 30400
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "250m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+
+# Ingress configuration
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: novu.local
+      paths:
+        - path: /
+          pathType: Prefix
+          service: dashboard
+        - path: /api
+          pathType: Prefix
+          service: api
+        - path: /ws
+          pathType: Prefix
+          service: ws
+  tls: []
+
+# Service account
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+# Pod security context
+podSecurityContext: {}
+
+# Security context
+securityContext: {}
+
+# Node selector
+nodeSelector: {}
+
+# Tolerations
+tolerations: []
+
+# Affinity
+affinity: {}

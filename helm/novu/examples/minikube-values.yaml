@@ -1,0 +1,91 @@
+# Example values for Minikube deployment
+# This file contains optimized settings for running Novu on Minikube
+
+env:
+  # Security - Change these in production!
+  jwtSecret: "minikube-jwt-secret-change-in-production"
+  storeEncryptionKey: "minikube-encryption-key-change-in-production"
+  novuSecretKey: "minikube-novu-secret-change-in-production"
+  
+  # Database
+  mongoInitdbRootUsername: "novuadmin"
+  mongoInitdbRootPassword: "minikubepassword"
+  
+  # Dashboard URLs (will be accessible via NodePort)
+  viteApiHostname: "http://localhost:30300"  # API NodePort
+  viteWebsocketHostname: "http://localhost:30302"  # WS NodePort
+
+# Redis configuration - reduced for Minikube
+redis:
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "256Mi"
+      cpu: "200m"
+
+# MongoDB configuration - reduced for Minikube
+mongodb:
+  persistence:
+    enabled: true
+    size: 2Gi  # Smaller for Minikube
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "200m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+
+# API service - reduced resources for Minikube
+api:
+  service:
+    type: NodePort
+    port: 3000
+    nodePort: 30300  # Fixed NodePort for easy access
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "200m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+
+# Worker service - reduced resources for Minikube
+worker:
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+    limits:
+      memory: "512Mi"
+      cpu: "300m"
+
+# WebSocket service - reduced resources for Minikube
+ws:
+  service:
+    type: NodePort
+    port: 3002
+    nodePort: 30302  # Fixed NodePort for easy access
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "256Mi"
+      cpu: "200m"
+
+# Dashboard service - already configured with NodePort
+dashboard:
+  service:
+    type: NodePort
+    port: 4000
+    nodePort: 30400
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "256Mi"
+      cpu: "200m"

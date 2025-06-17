@@ -1,0 +1,17 @@
+apiVersion: v2
+name: novu
+description: A Helm chart for Novu - Open-source notification infrastructure
+type: application
+version: 0.1.0
+appVersion: "2.2.0"
+keywords:
+  - novu
+  - notifications
+  - infrastructure
+  - messaging
+home: https://novu.co
+sources:
+  - https://github.com/novuhq/novu
+maintainers:
+  - name: Novu Team
+    email: team@novu.co

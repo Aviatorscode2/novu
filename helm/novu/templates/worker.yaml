@@ -1,0 +1,50 @@
+{{- if .Values.worker.enabled -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "novu.fullname" . }}-worker
+  labels:
+    {{- $component := "worker" -}}
+    {{- include "novu.componentLabels" (dict "Chart" .Chart "Release" .Release "Values" .Values "component" $component) | nindent 4 }}
+spec:
+  replicas: {{ .Values.worker.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "novu.componentSelectorLabels" (dict "Chart" .Chart "Release" .Release "Values" .Values "component" $component) | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "novu.componentSelectorLabels" (dict "Chart" .Chart "Release" .Release "Values" .Values "component" $component) | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "novu.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: worker
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.worker.image.repository }}:{{ .Values.worker.image.tag }}"
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "novu.fullname" . }}-config
+            - secretRef:
+                name: {{ include "novu.fullname" . }}-secret
+          env:
+            - name: API_ROOT_URL
+              value: "http://{{ include "novu.fullname" . }}-api:{{ .Values.api.service.port }}"
+          resources:
+            {{- toYaml .Values.worker.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

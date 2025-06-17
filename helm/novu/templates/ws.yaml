@@ -1,0 +1,86 @@
+{{- if .Values.ws.enabled -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "novu.fullname" . }}-ws
+  labels:
+    {{- $component := "ws" -}}
+    {{- include "novu.componentLabels" (dict "Chart" .Chart "Release" .Release "Values" .Values "component" $component) | nindent 4 }}
+spec:
+  replicas: {{ .Values.ws.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "novu.componentSelectorLabels" (dict "Chart" .Chart "Release" .Release "Values" .Values "component" $component) | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "novu.componentSelectorLabels" (dict "Chart" .Chart "Release" .Release "Values" .Values "component" $component) | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "novu.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: ws
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.ws.image.repository }}:{{ .Values.ws.image.tag }}"
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          ports:
+            - name: ws
+              containerPort: {{ .Values.env.wsPort }}
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: {{ include "novu.fullname" . }}-config
+            - secretRef:
+                name: {{ include "novu.fullname" . }}-secret
+          livenessProbe:
+            httpGet:
+              path: /health-check
+              port: ws
+            initialDelaySeconds: 30
+            timeoutSeconds: 5
+            periodSeconds: 30
+            successThreshold: 1
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health-check
+              port: ws
+            initialDelaySeconds: 15
+            timeoutSeconds: 3
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+          resources:
+            {{- toYaml .Values.ws.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "novu.fullname" . }}-ws
+  labels:
+    {{- $component := "ws" -}}
+    {{- include "novu.componentLabels" (dict "Chart" .Chart "Release" .Release "Values" .Values "component" $component) | nindent 4 }}
+spec:
+  type: {{ .Values.ws.service.type }}
+  ports:
+    - port: {{ .Values.ws.service.port }}
+      targetPort: ws
+      protocol: TCP
+      name: ws
+  selector:
+    {{- include "novu.componentSelectorLabels" (dict "Chart" .Chart "Release" .Release "Values" .Values "component" $component) | nindent 4 }}
+{{- end }}
